@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+
+{% block title %}Home - Mini Blog Portal{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="hero-section">
+        <h1>Welcome to Mini Blog Portal</h1>
+        <p>Share your thoughts, connect with others, and discover amazing content.</p>
+        {% if not session.user_id %}
+            <div class="hero-actions">
+                <a href="{{ url_for('signup') }}" class="btn btn-primary">
+                    <i class="fas fa-user-plus"></i> Get Started
+                </a>
+                <a href="{{ url_for('login') }}" class="btn btn-secondary">
+                    <i class="fas fa-sign-in-alt"></i> Login
+                </a>
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="posts-section">
+        <h2>Latest Posts</h2>
+        
+        {% if posts %}
+            <div class="posts-grid">
+                {% for post in posts %}
+                    <article class="post-card">
+                        <div class="post-header">
+                            <h3 class="post-title">
+                                <a href="{{ url_for('view_post', post_id=post.id) }}" class="post-title-link">{{ post.title }}</a>
+                            </h3>
+                            <div class="post-meta">
+                                <span class="post-author">
+                                    <i class="fas fa-user"></i> {{ post.username }}
+                                </span>
+                                <span class="post-date">
+                                    <i class="fas fa-calendar"></i> {{ post.created_at.strftime('%B %d, %Y at %I:%M %p') }}
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div class="post-content">
+                            <p>{{ post.content[:200] }}{% if post.content|length > 200 %}...{% endif %}</p>
+                        </div>
+                        
+                        <div class="post-stats">
+                            <span class="post-likes">
+                                <i class="fas fa-heart"></i> {{ post.like_count }} likes
+                            </span>
+                            <span class="post-comments">
+                                <i class="fas fa-comment"></i> {{ post.comment_count }} comments
+                            </span>
+                        </div>
+                        
+                        <div class="post-actions">
+                            <a href="{{ url_for('view_post', post_id=post.id) }}" class="btn btn-primary">
+                                <i class="fas fa-eye"></i> View Post
+                            </a>
+                            {% if session.user_id %}
+                                <button class="btn btn-like" onclick="likePost({{ post.id }})" data-post-id="{{ post.id }}">
+                                    <i class="fas fa-heart"></i> Like
+                                </button>
+                                <button class="btn btn-comment" onclick="toggleCommentForm({{ post.id }})">
+                                    <i class="fas fa-comment"></i> Comment
+                                </button>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Comment Form (Hidden by default) -->
+                        {% if session.user_id %}
+                            <div class="comment-form" id="comment-form-{{ post.id }}" style="display: none;">
+                                <form method="POST" action="{{ url_for('comment_post', post_id=post.id) }}">
+                                    <div class="form-group">
+                                        <textarea name="content" placeholder="Write a comment..." required></textarea>
+                                    </div>
+                                    <div class="form-actions">
+                                        <button type="submit" class="btn btn-primary btn-sm">
+                                            <i class="fas fa-paper-plane"></i> Post Comment
+                                        </button>
+                                        <button type="button" class="btn btn-secondary btn-sm" onclick="toggleCommentForm({{ post.id }})">
+                                            <i class="fas fa-times"></i> Cancel
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        {% endif %}
+                    </article>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <i class="fas fa-blog"></i>
+                <h3>No posts yet</h3>
+                <p>Be the first to share something amazing!</p>
+                {% if session.user_id %}
+                    <a href="{{ url_for('create_post') }}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Create First Post
+                    </a>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+function likePost(postId) {
+    fetch(`/like_post/${postId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const button = document.querySelector(`[data-post-id="${postId}"]`);
+                const likeCount = button.parentElement.parentElement.querySelector('.post-likes');
+                
+                if (data.action === 'liked') {
+                    button.innerHTML = '<i class="fas fa-heart"></i> Unlike';
+                    button.classList.add('liked');
+                } else {
+                    button.innerHTML = '<i class="fas fa-heart"></i> Like';
+                    button.classList.remove('liked');
+                }
+                
+                likeCount.innerHTML = `<i class="fas fa-heart"></i> ${data.like_count} likes`;
+            } else {
+                alert(data.message || 'Failed to like post');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Failed to like post');
+        });
+}
+
+function toggleCommentForm(postId) {
+    const form = document.getElementById(`comment-form-${postId}`);
+    if (form.style.display === 'none') {
+        form.style.display = 'block';
+    } else {
+        form.style.display = 'none';
+    }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Mini Blog Portal{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <a href="{{ url_for('index') }}">
+                    <i class="fas fa-blog"></i> Mini Blog
+                </a>
+            </div>
+            
+            <div class="nav-menu">
+                <a href="{{ url_for('index') }}" class="nav-link">
+                    <i class="fas fa-home"></i> Home
+                </a>
+                
+                {% if session.user_id %}
+                    <a href="{{ url_for('dashboard') }}" class="nav-link">
+                        <i class="fas fa-tachometer-alt"></i> Dashboard
+                    </a>
+                    <a href="{{ url_for('create_post') }}" class="nav-link">
+                        <i class="fas fa-plus"></i> New Post
+                    </a>
+                    
+                    {% if session.role == 'admin' %}
+                        <a href="{{ url_for('admin_panel') }}" class="nav-link admin-link">
+                            <i class="fas fa-cog"></i> Admin
+                        </a>
+                    {% endif %}
+                    
+                    <div class="nav-user">
+                        <span class="user-name">
+                            <i class="fas fa-user"></i> {{ session.username }}
+                        </span>
+                        <a href="{{ url_for('logout') }}" class="nav-link logout">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </a>
+                    </div>
+                {% else %}
+                    <a href="{{ url_for('login') }}" class="nav-link">
+                        <i class="fas fa-sign-in-alt"></i> Login
+                    </a>
+                    <a href="{{ url_for('signup') }}" class="nav-link">
+                        <i class="fas fa-user-plus"></i> Sign Up
+                    </a>
+                {% endif %}
+            </div>
+            
+            <div class="nav-toggle">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for category, message in messages %}
+                        <div class="flash-message flash-{{ category }}">
+                            <i class="fas fa-{{ 'check-circle' if category == 'success' else 'exclamation-circle' if category == 'error' else 'info-circle' }}"></i>
+                            {{ message }}
+                            <button class="flash-close" onclick="this.parentElement.remove()">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <p>&copy; 2025 Mini Blog Portal. Built with Flask and PostgreSQL.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Mobile menu toggle
+        document.querySelector('.nav-toggle').addEventListener('click', function() {
+            document.querySelector('.nav-menu').classList.toggle('active');
+        });
+
+        // Auto-hide flash messages
+        setTimeout(function() {
+            const flashMessages = document.querySelectorAll('.flash-message');
+            flashMessages.forEach(function(message) {
+                message.style.opacity = '0';
+                setTimeout(function() {
+                    message.remove();
+                }, 300);
+            });
+        }, 5000);
+    </script>
+</body>
+</html>

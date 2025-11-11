@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block title %}Create Post - Mini Blog Portal{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="form-container">
+        <div class="form-card">
+            <div class="form-header">
+                <h2><i class="fas fa-plus"></i> Create New Post</h2>
+                <p>Share your thoughts with the community.</p>
+            </div>
+            
+            <form method="POST" class="post-form">
+                <div class="form-group">
+                    <label for="title">
+                        <i class="fas fa-heading"></i> Post Title
+                    </label>
+                    <input type="text" id="title" name="title" required 
+                           placeholder="Enter a compelling title for your post" maxlength="200">
+                </div>
+                
+                <div class="form-group">
+                    <label for="content">
+                        <i class="fas fa-align-left"></i> Post Content
+                    </label>
+                    <textarea id="content" name="content" required 
+                              placeholder="Write your post content here..." rows="10"></textarea>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-paper-plane"></i> Publish Post
+                    </button>
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">
+                        <i class="fas fa-times"></i> Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+// Character counter for title
+document.getElementById('title').addEventListener('input', function() {
+    const maxLength = 200;
+    const currentLength = this.value.length;
+    const remaining = maxLength - currentLength;
+    
+    // Update character count display
+    let counter = document.getElementById('title-counter');
+    if (!counter) {
+        counter = document.createElement('small');
+        counter.id = 'title-counter';
+        counter.className = 'char-counter';
+        this.parentNode.appendChild(counter);
+    }
+    
+    counter.textContent = `${currentLength}/${maxLength} characters`;
+    counter.style.color = remaining < 20 ? '#e74c3c' : '#666';
+});
+
+// Auto-resize textarea
+document.getElementById('content').addEventListener('input', function() {
+    this.style.height = 'auto';
+    this.style.height = this.scrollHeight + 'px';
+});
+</script>
+{% endblock %}
